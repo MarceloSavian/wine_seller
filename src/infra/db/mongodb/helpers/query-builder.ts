@@ -22,6 +22,13 @@ export class QueryBuilder {
     return this
   }
 
+  group (data: object): QueryBuilder {
+    this.query.push({
+      $group: data
+    })
+    return this
+  }
+
   limit (data: number): QueryBuilder {
     this.query.push({
       $limit: data
