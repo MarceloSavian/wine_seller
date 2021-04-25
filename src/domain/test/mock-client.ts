@@ -1,4 +1,4 @@
-import { Client } from '../models/client'
+import { Client, ClientTotal } from '../models/client'
 
 export const mockClientModel = (): Client => ({
   id: 'any_id',
@@ -6,4 +6,7 @@ export const mockClientModel = (): Client => ({
   cpf: 'any_cpf'
 })
 
-export const mockClients = (): Client[] => ([mockClientModel()])
+export const mockClientsTotal = (): ClientTotal[] => ([{
+  ...mockClientModel(),
+  total: 500
+}])

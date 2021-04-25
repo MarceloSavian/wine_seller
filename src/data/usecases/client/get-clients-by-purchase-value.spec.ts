@@ -1,6 +1,6 @@
 import { GetClientsByPurchaseValueRepository } from '@/data/protocols/db/client/get-clients-by-purchase-value'
 import { mockGetClientsByPurchaseValueRepository } from '@/data/test/mock-db-client'
-import { mockClients } from '@/domain/test/mock-client'
+import { mockClientsTotal } from '@/domain/test/mock-client'
 import { DbGetClientsByPurchaseValue } from './get-clients-by-purchase-value'
 
 type SutTypes = {
@@ -32,6 +32,6 @@ describe('DbGetClientsByPurchaseValue', () => {
   test('should returns clients if succeds', async () => {
     const { sut } = mockSut()
     const value = await sut.getByPurchaseValue()
-    expect(value).toEqual(mockClients())
+    expect(value).toEqual(mockClientsTotal())
   })
 })
