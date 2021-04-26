@@ -18,9 +18,9 @@ async function insertClient (): Promise<string> {
   return mongoHelper.map(result.ops[0]).id
 }
 
-async function insertPurchase (clientId: string): Promise<string> {
+async function insertPurchase (clientId: string, value?: number, date?: Date): Promise<string> {
   const purchaseCollection = await mongoHelper.getCollection('purchases')
-  const result = await purchaseCollection.insertOne({ clientId, date: new Date(), total: 500 })
+  const result = await purchaseCollection.insertOne({ clientId, date: date ?? new Date(), total: value ?? 500 })
   return mongoHelper.map(result.ops[0]).id
 }
 
@@ -51,5 +51,22 @@ describe('ClientMongoRepository', () => {
     expect(result[0].id).toEqual(id1)
     expect(result[1].id).toEqual(id2)
     expect(result[2].id).toEqual(id3)
+  })
+  test('Should return biggest purchase client', async () => {
+    const { sut } = mockSut()
+    const id1 = await insertClient()
+    await insertPurchase(id1, 500, new Date(2016, 2, 22))
+    await insertPurchase(id1, 500, new Date(2016, 2, 20))
+    await insertPurchase(id1, 1500, new Date(2016, 2, 21))
+    const id2 = await insertClient()
+    await insertPurchase(id2, 2500, new Date(2017, 2, 5))
+    await insertPurchase(id2, 500, new Date(2016, 2, 28))
+    const id3 = await insertClient()
+    await insertPurchase(id3, 500, new Date(2016, 2, 1))
+    const result = await sut.getClientByBiggerPurchase()
+    expect(result?.id).toEqual(id1)
+    expect(result?.name).toBe('any_name')
+    expect(result?.cpf).toBe('any_cpf')
+    expect(result?.total).toBe(1500)
   })
 })
