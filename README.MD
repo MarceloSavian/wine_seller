@@ -1,5 +1,10 @@
 # Wine Seller
 
+> # Use agora
+
+Você pode utilizar e testar essa api clicando [aqui](http://18.188.76.69:5051/api-docs/#/)
+Neste link está toda a documentação e utilização da api
+
 > ## Database Design
 1. [Database](./requirements/database/database.md)
 
