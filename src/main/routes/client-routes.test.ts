@@ -1,11 +1,24 @@
-import { Collection } from 'mongodb'
+import { Collection, ObjectId } from 'mongodb'
 import request from 'supertest'
 import { mongoHelper } from '@/infra/db/mongodb/helpers/mongo-helper'
 import app from '../config/app'
+import { mockProductModel } from '@/domain/test/mock-product'
 
 async function insertClient (): Promise<string> {
   const clientsCollection = await mongoHelper.getCollection('clients')
   const result = await clientsCollection.insertOne({ name: 'any_name', cpf: 'any_cpf' })
+  return mongoHelper.map(result.ops[0]).id
+}
+
+async function insertProduct (): Promise<string> {
+  const productsCollection = await mongoHelper.getCollection('products')
+  const result = await productsCollection.insertOne(mockProductModel())
+  return mongoHelper.map(result.ops[0]).id
+}
+
+async function insertItem (purchaseId: string, productId: string): Promise<string> {
+  const itemsCollection = await mongoHelper.getCollection('items')
+  const result = await itemsCollection.insertOne({ purchaseId: new ObjectId(purchaseId), productId: new ObjectId(productId) })
   return mongoHelper.map(result.ops[0]).id
 }
 
@@ -72,6 +85,17 @@ describe('Client routes', () => {
       await insertPurchase(id3)
       await request(app)
         .get('/api/client/mostBuyers')
+        .expect(200)
+    })
+  })
+  describe('GET /client/:clientId/wineAdvice', () => {
+    test('Should return 200 on client', async () => {
+      const id = await insertClient()
+      const productId = await insertProduct()
+      const purchaseId = await insertPurchase(id)
+      await insertItem(purchaseId, productId)
+      await request(app)
+        .get(`/api/client/${id}/wineAdvice`)
         .expect(200)
     })
   })
