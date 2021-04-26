@@ -9,9 +9,9 @@ async function insertClient (): Promise<string> {
   return mongoHelper.map(result.ops[0]).id
 }
 
-async function insertPurchase (clientId: string): Promise<string> {
+async function insertPurchase (clientId: string, value?: number, date?: Date): Promise<string> {
   const purchaseCollection = await mongoHelper.getCollection('purchases')
-  const result = await purchaseCollection.insertOne({ clientId, date: new Date(), total: 500 })
+  const result = await purchaseCollection.insertOne({ clientId, date: date ?? new Date(), total: value ?? 500 })
   return mongoHelper.map(result.ops[0]).id
 }
 
@@ -40,6 +40,22 @@ describe('Client routes', () => {
       await insertPurchase(id3)
       await request(app)
         .get('/api/client/byPurchaseValue')
+        .expect(200)
+    })
+  })
+  describe('GET /client/byBiggerPurchase', () => {
+    test('Should return 200 on client', async () => {
+      const id1 = await insertClient()
+      await insertPurchase(id1, 500, new Date(2016, 2, 22))
+      await insertPurchase(id1, 500, new Date(2016, 2, 20))
+      await insertPurchase(id1, 1500, new Date(2016, 2, 21))
+      const id2 = await insertClient()
+      await insertPurchase(id2, 2500, new Date(2017, 2, 5))
+      await insertPurchase(id2, 500, new Date(2016, 2, 28))
+      const id3 = await insertClient()
+      await insertPurchase(id3, 500, new Date(2016, 2, 1))
+      await request(app)
+        .get('/api/client/byBiggerPurchase')
         .expect(200)
     })
   })
