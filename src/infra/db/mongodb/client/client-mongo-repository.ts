@@ -1,12 +1,15 @@
 import { GetClientByBiggerPurchaseRepository } from '@/data/protocols/db/client/get-client-by-bigger-purchase'
+import { GetClientProductsRepository } from '@/data/protocols/db/client/get-client-products'
 import { GetClientsByPurchaseValueRepository } from '@/data/protocols/db/client/get-clients-by-purchase-value'
 import { GetMostBuyerClientRepository } from '@/data/protocols/db/client/get-most-buyer-client'
 import { ClientTotal } from '@/domain/models/client'
+import { Product } from '@/domain/models/product'
+import { ObjectId } from 'bson'
 import { mongoHelper } from '../helpers/mongo-helper'
 import { QueryBuilder } from '../helpers/query-builder'
 
 export class ClientMongoRepository implements GetClientsByPurchaseValueRepository,
-  GetClientByBiggerPurchaseRepository, GetMostBuyerClientRepository {
+  GetClientByBiggerPurchaseRepository, GetMostBuyerClientRepository, GetClientProductsRepository {
   async getByPurchaseValue (): Promise<ClientTotal[]> {
     const purchaseCollection = await mongoHelper.getCollection('clients')
     const query = new QueryBuilder()
@@ -73,6 +76,47 @@ export class ClientMongoRepository implements GetClientsByPurchaseValueRepositor
         total: { $sum: 1 }
       })
       .sort({ total: -1 })
+    const result = await purchaseCollection.aggregate(query.build()).toArray()
+    return mongoHelper.mapCollection(result)
+  }
+
+  async getClientProducts (id: string): Promise<Product[]> {
+    const purchaseCollection = await mongoHelper.getCollection('clients')
+    const query = new QueryBuilder()
+      .match({
+        _id: new ObjectId(id)
+      })
+      .lookup({
+        from: 'purchases',
+        localField: '_id',
+        foreignField: 'clientId',
+        as: 'purchases'
+      })
+      .unwind({ path: '$purchases' })
+      .lookup({
+        from: 'items',
+        localField: 'purchases._id',
+        foreignField: 'purchaseId',
+        as: 'items'
+      })
+      .unwind({ path: '$items' })
+      .lookup({
+        from: 'products',
+        localField: 'items.productId',
+        foreignField: '_id',
+        as: 'products'
+      })
+      .unwind({ path: '$products' })
+      .project({
+        _id: '$products._id',
+        product: '$products.product',
+        variety: '$products.variety',
+        country: '$products.country',
+        category: '$products.category',
+        harvest: '$products.harvest',
+        price: '$products.price'
+      })
+
     const result = await purchaseCollection.aggregate(query.build()).toArray()
     return mongoHelper.mapCollection(result)
   }

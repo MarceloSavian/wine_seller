@@ -1,6 +1,7 @@
 import { mongoHelper } from '../helpers/mongo-helper'
 import { ClientMongoRepository } from './client-mongo-repository'
-import { Collection } from 'mongodb'
+import { Collection, ObjectId } from 'mongodb'
+import { mockProductModel } from '@/domain/test/mock-product'
 
 type SutTypes = {
   sut: ClientMongoRepository
@@ -15,6 +16,18 @@ const mockSut = (): SutTypes => {
 async function insertClient (): Promise<string> {
   const clientsCollection = await mongoHelper.getCollection('clients')
   const result = await clientsCollection.insertOne({ name: 'any_name', cpf: 'any_cpf' })
+  return mongoHelper.map(result.ops[0]).id
+}
+
+async function insertProduct (): Promise<string> {
+  const productsCollection = await mongoHelper.getCollection('products')
+  const result = await productsCollection.insertOne(mockProductModel())
+  return mongoHelper.map(result.ops[0]).id
+}
+
+async function insertItem (purchaseId: string, productId: string): Promise<string> {
+  const itemsCollection = await mongoHelper.getCollection('items')
+  const result = await itemsCollection.insertOne({ purchaseId: new ObjectId(purchaseId), productId: new ObjectId(productId) })
   return mongoHelper.map(result.ops[0]).id
 }
 
@@ -87,5 +100,20 @@ describe('ClientMongoRepository', () => {
     expect(result[0].total).toBe(3)
     expect(result[1].total).toBe(2)
     expect(result[2].total).toBe(1)
+  })
+  test('Should return products client', async () => {
+    const { sut } = mockSut()
+    const id = await insertClient()
+    const productId = await insertProduct()
+    const purchaseId = await insertPurchase(id)
+    await insertItem(purchaseId, productId)
+    const result = await sut.getClientProducts(id)
+    expect(result[0].id).toBeTruthy()
+    expect(result[0].category).toEqual(mockProductModel().category)
+    expect(result[0].country).toEqual(mockProductModel().country)
+    expect(result[0].harvest).toEqual(mockProductModel().harvest)
+    expect(result[0].price).toEqual(mockProductModel().price)
+    expect(result[0].product).toEqual(mockProductModel().product)
+    expect(result[0].variety).toEqual(mockProductModel().variety)
   })
 })
