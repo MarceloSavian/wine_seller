@@ -32,6 +32,6 @@ describe('DbGetMostBuyerClient', () => {
   test('should returns clients if succeds', async () => {
     const { sut } = mockSut()
     const value = await sut.getMostBuyerClient()
-    expect(value).toEqual(mockClientsTotal()[0])
+    expect(value).toEqual(mockClientsTotal())
   })
 })

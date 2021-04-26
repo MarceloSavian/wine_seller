@@ -1,5 +1,5 @@
 import { ClientTotal } from '@/domain/models/client'
 
 export interface GetMostBuyerClientRepository {
-  getMostBuyerClient: () => Promise<ClientTotal | null>
+  getMostBuyerClient: () => Promise<ClientTotal[]>
 }

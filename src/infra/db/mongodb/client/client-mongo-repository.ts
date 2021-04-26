@@ -1,10 +1,12 @@
 import { GetClientByBiggerPurchaseRepository } from '@/data/protocols/db/client/get-client-by-bigger-purchase'
 import { GetClientsByPurchaseValueRepository } from '@/data/protocols/db/client/get-clients-by-purchase-value'
+import { GetMostBuyerClientRepository } from '@/data/protocols/db/client/get-most-buyer-client'
 import { ClientTotal } from '@/domain/models/client'
 import { mongoHelper } from '../helpers/mongo-helper'
 import { QueryBuilder } from '../helpers/query-builder'
 
-export class ClientMongoRepository implements GetClientsByPurchaseValueRepository, GetClientByBiggerPurchaseRepository {
+export class ClientMongoRepository implements GetClientsByPurchaseValueRepository,
+  GetClientByBiggerPurchaseRepository, GetMostBuyerClientRepository {
   async getByPurchaseValue (): Promise<ClientTotal[]> {
     const purchaseCollection = await mongoHelper.getCollection('clients')
     const query = new QueryBuilder()
@@ -52,5 +54,26 @@ export class ClientMongoRepository implements GetClientsByPurchaseValueRepositor
       .limit(1)
     const result = (await purchaseCollection.aggregate(query.build()).toArray())[0]
     return mongoHelper.map(result)
+  }
+
+  async getMostBuyerClient (): Promise<ClientTotal[]> {
+    const purchaseCollection = await mongoHelper.getCollection('clients')
+    const query = new QueryBuilder()
+      .lookup({
+        from: 'purchases',
+        localField: '_id',
+        foreignField: 'clientId',
+        as: 'purchases'
+      })
+      .unwind({ path: '$purchases' })
+      .group({
+        _id: '$_id',
+        name: { $first: '$name' },
+        cpf: { $first: '$cpf' },
+        total: { $sum: 1 }
+      })
+      .sort({ total: -1 })
+    const result = await purchaseCollection.aggregate(query.build()).toArray()
+    return mongoHelper.mapCollection(result)
   }
 }

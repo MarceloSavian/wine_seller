@@ -24,8 +24,8 @@ export const mockGetClientByBiggerPurchaseRepository = (): GetClientByBiggerPurc
 
 export const mockGetMostBuyerClientRepository = (): GetMostBuyerClientRepository => {
   class GetMostBuyerClientRepositoryStub implements GetMostBuyerClientRepository {
-    async getMostBuyerClient (): Promise<ClientTotal | null> {
-      return mockClientsTotal()[0]
+    async getMostBuyerClient (): Promise<ClientTotal[]> {
+      return mockClientsTotal()
     }
   }
   return new GetMostBuyerClientRepositoryStub()

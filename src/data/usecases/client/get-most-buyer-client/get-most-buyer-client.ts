@@ -7,7 +7,7 @@ export class DbGetMostBuyerClient implements GetMostBuyerClient {
     private readonly getMostBuyerClientRepository: GetMostBuyerClientRepository
   ) {}
 
-  async getMostBuyerClient (): Promise<ClientTotal | null> {
+  async getMostBuyerClient (): Promise<ClientTotal[]> {
     return await this.getMostBuyerClientRepository.getMostBuyerClient()
   }
 }
