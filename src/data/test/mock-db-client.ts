@@ -1,6 +1,9 @@
 import { ClientTotal } from '@/domain/models/client'
+import { Product } from '@/domain/models/product'
 import { mockClientsTotal } from '@/domain/test/mock-client'
+import { mockProductModel } from '@/domain/test/mock-product'
 import { GetClientByBiggerPurchaseRepository } from '../protocols/db/client/get-client-by-bigger-purchase'
+import { GetClientProductsRepository } from '../protocols/db/client/get-client-products'
 import { GetClientsByPurchaseValueRepository } from '../protocols/db/client/get-clients-by-purchase-value'
 import { GetMostBuyerClientRepository } from '../protocols/db/client/get-most-buyer-client'
 
@@ -29,4 +32,13 @@ export const mockGetMostBuyerClientRepository = (): GetMostBuyerClientRepository
     }
   }
   return new GetMostBuyerClientRepositoryStub()
+}
+
+export const mockGetClientProductsRepository = (): GetClientProductsRepository => {
+  class GetClientProductsRepositoryStub implements GetClientProductsRepository {
+    async getClientProducts (): Promise<Product[]> {
+      return [mockProductModel()]
+    }
+  }
+  return new GetClientProductsRepositoryStub()
 }

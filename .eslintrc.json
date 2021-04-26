@@ -11,6 +11,7 @@
         "@typescript-eslint/no-unused-vars": "off",
         "@typescript-eslint/consistent-type-definitions": "off",
         "@typescript-eslint/no-unused-vars-experimental": "error",
+        "@typescript-eslint/no-for-in-array": "off",
         "no-unused-vars": "off"
     }
 }
